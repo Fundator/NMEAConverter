@@ -16,7 +16,7 @@ namespace NMEAConverter
 				{
 					Console.WriteLine($"Trying to convert everything in {o.InputDirectory}");
 					var inputDirectory = o.InputDirectory;
-					var filenames = Directory.GetFiles(inputDirectory);
+					var filenames = Directory.GetFiles(inputDirectory, "*", SearchOption.AllDirectories);
 					Parallel.ForEach(filenames, inputFilename =>
 					{
 						inputFilename = Path.GetFullPath(inputFilename);
