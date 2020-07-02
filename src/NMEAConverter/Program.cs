@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Metadata.Ecma335;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
@@ -40,17 +41,25 @@ namespace NMEAConverter
 						inputFilename = Path.GetFullPath(inputFilename);
 
 
-						var outputFilename = Path.Combine(outputDirectory,
-															Path.GetFileNameWithoutExtension(inputFilename) + ".converted.csv");
+						var outputFilename = Path.GetFileNameWithoutExtension(inputFilename) + ".converted.csv";
+						var outputFilenameFullPath = Path.Combine(outputDirectory,
+															outputFilename);
 
-						NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilename);
-						progressCount++;
-						lock (syncRoot)
+						if (completedFiles.Contains(outputFilename))
 						{
-							Console.WriteLine($"Completed {inputFilename}. Progress: {Math.Round((progressCount / totalCount) * 100.0, 2)}%");
-							completedFiles.Add(outputFilename);
-							var serialized = JsonSerializer.Serialize(completedFiles);
-							File.WriteAllText(completedFilesRegistry, serialized);
+							Console.WriteLine($"Skipping {outputFilename}, already processed");
+						}
+						else
+						{
+							NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilenameFullPath);
+							progressCount++;
+							lock (syncRoot)
+							{
+								Console.WriteLine($"Completed {inputFilename}. Progress: {Math.Round((progressCount / totalCount) * 100.0, 2)}%");
+								completedFiles.Add(outputFilename);
+								var serialized = JsonSerializer.Serialize(completedFiles);
+								File.WriteAllText(completedFilesRegistry, serialized);
+							}
 						}
 					});
 				}
