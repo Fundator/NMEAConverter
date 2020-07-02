@@ -35,7 +35,7 @@ namespace NMEAConverter
 						completedFiles = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(completedFilesRegistry));
 					}
 
-					Parallel.ForEach(filenames, new ParallelOptions { MaxDegreeOfParallelism = 16 }, inputFilename =>
+					Parallel.ForEach(filenames, new ParallelOptions { MaxDegreeOfParallelism = o.Parallellism }, inputFilename =>
 					{
 						inputFilename = Path.GetFullPath(inputFilename);
 

@@ -2,7 +2,7 @@
   "profiles": {
     "NMEAConverter": {
       "commandName": "Project",
-      "commandLineArgs": "--input-directory \"E:\\\\Downloads\\\\NMEA\" --output-directory \"H:\\\\Output3\""
+      "commandLineArgs": "-p 16 --input-directory \"E:\\\\Downloads\\\\NMEA\" --output-directory \"H:\\\\Output3\""
     }
   }
 }

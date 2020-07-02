@@ -11,6 +11,11 @@ namespace NMEAConverter
 
 			[Option('o', "output-directory", Required = false, HelpText = "Path to a directory where output files will be stored")]
 			public string OutputDirectory { get; set; }
+
+
+			[Option('p', "parallellism", Required = false, HelpText = "Maximum parallellism")]
+			public int Parallellism { get; set; }
+
 		}
 	}
 }
