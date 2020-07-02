@@ -31,15 +31,20 @@ namespace NMEAConverter
 					Console.WriteLine("Number of lines: " + total);
 					var parser = new NAisParser.Parser();
 					csvWriter.WriteHeader<MessageType123Csv>();
+					csvWriter.NextRecord();
+					int lineNo = 0;
+					var records = new List<MessageType123Csv>();
 					foreach (var line in iterator)
 					{
-						var timestamp = DateTimeOffset.FromUnixTimeSeconds(int.Parse(line.Split("\\", StringSplitOptions.RemoveEmptyEntries).First().Split(":").Last().Split("*").First())).UtcDateTime;
-						var nmeaMessage = line.Split("\\").Last();
+						lineNo++;
 						try
 						{
 							AisResult aisResult = null;
+							var timestamp = DateTimeOffset.FromUnixTimeSeconds(int.Parse(line.Split("\\", StringSplitOptions.RemoveEmptyEntries).First().Split(":").Last().Split("*").First())).UtcDateTime;
+							var nmeaMessage = line.Split("\\").Last();
 							try
 							{
+
 								// NMEA messages can be fragmented over multiple lines
 								// so upon failure, try to parse another line of data
 								if (!parser.TryParse(nmeaMessage, out aisResult))
@@ -49,19 +54,20 @@ namespace NMEAConverter
 							}
 							catch (Exception e)
 							{
-								Console.WriteLine("Error in stage 1: " + e.Message);
+								Console.WriteLine($"Error in stage 1 on line {lineNo} in file {inputFilename}: " + e.Message);
 							}
 							if (aisResult != null && (aisResult.Type == 1 || aisResult.Type == 2 || aisResult.Type == 3))
 							{
 								try
 								{
-									parser = new NAisParser.Parser();
+									//parser = new NAisParser.Parser();
 									parser.TryParse(aisResult, out MessageType123 type123Result);
 									if (type123Result != null)
 									{
 										//messages.Add(new MessageType123Csv().MapFrom(type123Result, timestamp));
-										csvWriter.NextRecord();
-										csvWriter.WriteRecord(new MessageType123Csv().MapFrom(type123Result, timestamp));
+										records.Add(new MessageType123Csv().MapFrom(type123Result, timestamp));
+										//csvWriter.NextRecord();
+										//csvWriter.WriteRecord(new MessageType123Csv().MapFrom(type123Result, timestamp));
 									}
 									success++;
 								}
@@ -75,7 +81,7 @@ namespace NMEAConverter
 								success++;
 							}
 						}
-						catch (ArgumentException e)
+						catch (Exception e)
 						{
 							failed++;
 							if (e.InnerException != null)
@@ -90,6 +96,9 @@ namespace NMEAConverter
 						}
 						counter++;
 					}
+					Console.WriteLine($"Completed parsing {inputFilename}, writing..");
+					csvWriter.WriteRecords(records);
+					Console.WriteLine($"Writing to {outputFilename} completed!");
 					csvWriter.Flush();
 					Console.WriteLine($"Parsing {filename} complete. Succeeded: {(success / counter) * 100} Failed: {(failed / counter) * 100} Processed: {counter}");
 					Console.WriteLine($"{filename} completed");

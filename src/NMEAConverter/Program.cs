@@ -1,12 +1,17 @@
 ﻿using CommandLine;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace NMEAConverter
 {
 	internal partial class Program
 	{
+		private static object syncRoot = new object();
 		private static void Main(string[] args)
 		{
 			CommandLine.Parser.Default.ParseArguments<CommandLineOptions>(args)
@@ -16,18 +21,37 @@ namespace NMEAConverter
 				{
 					Console.WriteLine($"Trying to convert everything in {o.InputDirectory}");
 					var inputDirectory = o.InputDirectory;
+					var outputDirectory = string.IsNullOrWhiteSpace(o.OutputDirectory)
+							? inputDirectory
+							: o.OutputDirectory;
+
 					var filenames = Directory.GetFiles(inputDirectory, "*", SearchOption.AllDirectories);
-					Parallel.ForEach(filenames, inputFilename =>
+					var totalCount = filenames.Count();
+					var progressCount = 0;
+					var completedFiles = new List<string>();
+					var completedFilesRegistry = Path.Combine(outputDirectory, "completedfiles.json");
+					if (File.Exists(completedFilesRegistry))
+					{
+						completedFiles = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(completedFilesRegistry));
+					}
+
+					Parallel.ForEach(filenames, new ParallelOptions { MaxDegreeOfParallelism = 16 }, inputFilename =>
 					{
 						inputFilename = Path.GetFullPath(inputFilename);
-						var outputDirectory = string.IsNullOrWhiteSpace(o.OutputDirectory)
-													? Path.GetDirectoryName(inputFilename)
-													: o.OutputDirectory;
+
 
 						var outputFilename = Path.Combine(outputDirectory,
 															Path.GetFileNameWithoutExtension(inputFilename) + ".converted.csv");
 
 						NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilename);
+						progressCount++;
+						lock (syncRoot)
+						{
+							Console.WriteLine($"Completed {inputFilename}. Progress: {Math.Round((progressCount / totalCount) * 100.0, 2)}%");
+							completedFiles.Add(outputFilename);
+							var serialized = JsonSerializer.Serialize(completedFiles);
+							File.WriteAllText(completedFilesRegistry, serialized);
+						}
 					});
 				}
 				else
