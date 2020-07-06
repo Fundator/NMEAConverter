@@ -13,7 +13,7 @@ namespace NMEAConverter
 	{
 		public static class NmeaConverter
 		{
-			public static void ConvertNmeaToCsv(string inputFilename, string outputFilename, bool type123 = true, bool type5 = false, bool type4 = false)
+			public static void ConvertNmeaToCsv(string inputFilename, string outputFilename, bool type123, bool type4, bool type5)
 			{
 				var counter = 0.0;
 				var success = 0.0;

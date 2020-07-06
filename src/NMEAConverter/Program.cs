@@ -31,6 +31,11 @@ namespace NMEAConverter
 					var progressCount = 0;
 					var completedFiles = new List<string>();
 					var completedFilesRegistry = Path.Combine(outputDirectory, "completedfiles.json");
+
+					var type123 = o.Types.Contains(123) || (o.Types.Contains(1) && o.Types.Contains(2) && o.Types.Contains(3));
+					var type4 = o.Types.Contains(4);
+					var type5 = o.Types.Contains(5);
+
 					if (File.Exists(completedFilesRegistry))
 					{
 						completedFiles = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(completedFilesRegistry));
@@ -51,7 +56,7 @@ namespace NMEAConverter
 						}
 						else
 						{
-							NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilenameFullPath, false, true, true);
+							NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilenameFullPath, type123, type4, type5);
 							progressCount++;
 							lock (syncRoot)
 							{
