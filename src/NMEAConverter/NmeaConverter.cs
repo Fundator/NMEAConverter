@@ -15,6 +15,7 @@ namespace NMEAConverter
 		{
 			public static void ConvertNmeaToCsv(string inputFilename, string outputFilename, bool type123, bool type4, bool type5)
 			{
+				var ignored = 0;
 				var counter = 0.0;
 				var success = 0.0;
 				var failed = 0.0;
@@ -107,8 +108,8 @@ namespace NMEAConverter
 							} 
 							else
 							{
-								Console.WriteLine($"Ignoring type {aisResult.Type} message");
 								success++;
+								ignored++;
 							}
 						}
 						catch (Exception e)
@@ -168,7 +169,7 @@ namespace NMEAConverter
 						csvWriter.Dispose();
 					}
 
-					//Console.WriteLine($"Parsing {filename} complete. Succeeded: {(success / counter) * 100.0} Failed: {(failed / counter) * 100.0} Processed: {counter}");
+					Console.WriteLine($"Parsing {filename} complete. Succeeded: {(success / counter) * 100.0} Failed: {(failed / counter) * 100.0} Processed: {counter}. Ignored: {ignored}");
 					////Console.WriteLine($"{filename} completed");
 				}
 			}
