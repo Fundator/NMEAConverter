@@ -107,6 +107,7 @@ namespace NMEAConverter
 							} 
 							else
 							{
+								Console.WriteLine($"Ignoring type {aisResult.Type} message");
 								success++;
 							}
 						}
