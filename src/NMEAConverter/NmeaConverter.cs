@@ -12,7 +12,7 @@ namespace NMEAConverter
 	{
 		public static class NmeaConverter
 		{
-			public static void ConvertNmeaToCsv(string inputFilename, string outputFilename)
+			public static void ConvertNmeaToCsv(string inputFilename, string outputFilename, bool type123 = true, bool type5 = true)
 			{
 				var counter = 0.0;
 				var success = 0.0;
@@ -20,20 +20,17 @@ namespace NMEAConverter
 				var filename = Path.GetFileName(inputFilename);
 				var messages = new List<MessageType123Csv>();
 				using (var reader = new StreamReader(inputFilename))
-				using (var writer = new StreamWriter(outputFilename))
-				using (var csvWriter = new CsvWriter(writer, CultureInfo.InvariantCulture))
 				{
-					csvWriter.Configuration.RegisterClassMap<MessageType123CsvMap>();
-					csvWriter.Configuration.Delimiter = ";";
+
 					var iterator = File.ReadLines(inputFilename);
 					var total = iterator.Count();
 
 					Console.WriteLine("Number of lines: " + total);
 					var parser = new NAisParser.Parser();
-					csvWriter.WriteHeader<MessageType123Csv>();
-					csvWriter.NextRecord();
+
 					int lineNo = 0;
-					var records = new List<MessageType123Csv>();
+					var type123Records = new List<MessageType123Csv>();
+					var type5Records = new List<MessageType5>();
 					foreach (var line in iterator)
 					{
 						lineNo++;
@@ -56,7 +53,7 @@ namespace NMEAConverter
 							{
 								Console.WriteLine($"Error in stage 1 on line {lineNo} in file {inputFilename}: " + e.Message);
 							}
-							if (aisResult != null && (aisResult.Type == 1 || aisResult.Type == 2 || aisResult.Type == 3))
+							if (type123 && aisResult != null && (aisResult.Type == 1 || aisResult.Type == 2 || aisResult.Type == 3))
 							{
 								try
 								{
@@ -65,9 +62,25 @@ namespace NMEAConverter
 									if (type123Result != null)
 									{
 										//messages.Add(new MessageType123Csv().MapFrom(type123Result, timestamp));
-										records.Add(new MessageType123Csv().MapFrom(type123Result, timestamp));
+										type123Records.Add(new MessageType123Csv().MapFrom(type123Result, timestamp));
 										//csvWriter.NextRecord();
 										//csvWriter.WriteRecord(new MessageType123Csv().MapFrom(type123Result, timestamp));
+									}
+									success++;
+								}
+								catch (Exception e)
+								{
+									Console.WriteLine("Error in stage 2: " + e.Message);
+								}
+							}
+							else if (type5 && aisResult != null && aisResult.Type == 5)
+							{
+								try
+								{
+									parser.TryParse(aisResult, out MessageType5 type5Result);
+									if (type5Result != null)
+									{
+										type5Records.Add(type5Result);
 									}
 									success++;
 								}
@@ -96,12 +109,35 @@ namespace NMEAConverter
 						}
 						counter++;
 					}
-					Console.WriteLine($"Completed parsing {inputFilename}, writing..");
-					csvWriter.WriteRecords(records);
-					Console.WriteLine($"Writing to {outputFilename} completed!");
-					csvWriter.Flush();
-					Console.WriteLine($"Parsing {filename} complete. Succeeded: {(success / counter) * 100} Failed: {(failed / counter) * 100} Processed: {counter}");
-					Console.WriteLine($"{filename} completed");
+					if (type123)
+					{
+						Console.WriteLine($"Completed parsing Type 1, 2 and 3 messages from {inputFilename}, writing..");
+						var csvWriter = new CsvWriter(new StreamWriter(outputFilename), CultureInfo.InvariantCulture);
+						csvWriter.Configuration.RegisterClassMap<MessageType123CsvMap>();
+						csvWriter.Configuration.Delimiter = ";";
+						csvWriter.WriteHeader<MessageType123Csv>();
+						csvWriter.NextRecord();
+						csvWriter.WriteRecords(type123Records);
+						Console.WriteLine($"Writing to {outputFilename} completed!");
+						csvWriter.Flush();
+						csvWriter.Dispose();
+					}
+					if (type5)
+					{
+						Console.WriteLine($"Completed parsing Type 5 messages from {inputFilename}, writing..");
+						var outputFilenameStatic = outputFilename + ".static";
+						var csvWriter = new CsvWriter(new StreamWriter(outputFilenameStatic), CultureInfo.InvariantCulture);
+						csvWriter.Configuration.RegisterClassMap<MessageType5CsvMap>();
+						csvWriter.Configuration.Delimiter = ";";
+						csvWriter.WriteHeader<MessageType5>();
+						csvWriter.NextRecord();
+						csvWriter.WriteRecords(type5Records);
+						Console.WriteLine($"Writing to {outputFilenameStatic} completed!");
+						csvWriter.Flush();
+						csvWriter.Dispose();
+					}
+					Console.WriteLine($"Parsing {filename} complete. Succeeded: {(success / counter) * 100.0} Failed: {(failed / counter) * 100.0} Processed: {counter}");
+					//Console.WriteLine($"{filename} completed");
 				}
 			}
 		}

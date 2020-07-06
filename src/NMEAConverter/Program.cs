@@ -51,7 +51,7 @@ namespace NMEAConverter
 						}
 						else
 						{
-							NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilenameFullPath);
+							NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilenameFullPath, false, true);
 							progressCount++;
 							lock (syncRoot)
 							{
