@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration;
 
-namespace NMEAConverter
+namespace NMEAConverter.CSV
 {
 	public class MessageType123CsvMap : ClassMap<MessageType123Csv>
 	{

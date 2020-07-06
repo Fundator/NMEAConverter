@@ -1,9 +1,8 @@
 ﻿using CsvHelper.Configuration;
-using NAisParser;
 
-namespace NMEAConverter
+namespace NMEAConverter.CSV
 {
-	public class MessageType5CsvMap : ClassMap<MessageType5>
+	public class MessageType5CsvMap : ClassMap<MessageType5Csv>
 	{
 		public MessageType5CsvMap()
 		{
@@ -26,6 +25,8 @@ namespace NMEAConverter
 			Map(m => m.ToStern);
 			Map(m => m.Version).ConvertUsing(m => ((int)m.Version).ToString());
 			Map(m => m.VesselName);
+			Map(m => m.TimestampUtc).ConvertUsing(row => row.TimestampUtc.ToString("yyyy-MM-dd HH:mm:ss"));
+
 		}
 	}
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace NMEAConverter
+namespace NMEAConverter.CSV
 {
 	public class MessageType123Csv
 	{

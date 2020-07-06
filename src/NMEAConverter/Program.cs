@@ -51,11 +51,11 @@ namespace NMEAConverter
 						}
 						else
 						{
-							NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilenameFullPath, false, true);
+							NmeaConverter.ConvertNmeaToCsv(inputFilename, outputFilenameFullPath, false, true, true);
 							progressCount++;
 							lock (syncRoot)
 							{
-								Console.WriteLine($"Completed {inputFilename}. Progress: {Math.Round((progressCount / totalCount) * 100.0, 2)}%");
+								Console.WriteLine($"Completed {Path.GetFileName(inputFilename)}. Progress: {Math.Round(((progressCount*1.0) / (totalCount*1.0)) * 100.0, 2)}%");
 								completedFiles.Add(outputFilename);
 								var serialized = JsonSerializer.Serialize(completedFiles);
 								File.WriteAllText(completedFilesRegistry, serialized);

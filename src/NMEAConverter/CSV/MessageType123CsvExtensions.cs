@@ -1,7 +1,7 @@
 ﻿using NAisParser;
 using System;
 
-namespace NMEAConverter
+namespace NMEAConverter.CSV
 {
 	public static class MessageType123CsvExtensions
 	{
