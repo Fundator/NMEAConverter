@@ -36,11 +36,20 @@ namespace NMEAConverter
 					var type4 = o.Types.Contains(4);
 					var type5 = o.Types.Contains(5);
 
+					// Load the list of completed files if it exists
 					if (File.Exists(completedFilesRegistry))
 					{
 						completedFiles = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(completedFilesRegistry));
 					}
 
+					// Create output directory if it does not exist
+					if (!Directory.Exists(outputDirectory))
+					{
+						Console.WriteLine($"Creating output directory ({outputDirectory})..");
+						Directory.CreateDirectory(outputDirectory);
+					}
+
+					Console.WriteLine($"Starting {o.Parallellism} worker threads");
 					Parallel.ForEach(filenames, new ParallelOptions { MaxDegreeOfParallelism = o.Parallellism }, inputFilename =>
 					{
 						inputFilename = Path.GetFullPath(inputFilename);
